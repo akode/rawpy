@@ -7,6 +7,7 @@ env:
     - secure: "oupMUSNsfPH+jGxLlRfembe6dwdrd85/GlpgIpNxgCURvrsFWZCQDUvgMn+IaBz97Meovb9SrgrADT4dg+86wJ7tAfEEnFTq8nwuFkC8A2fvFHMIKV9PvUx7VLooQWje1u2BbqBk2UwpV9h9lq4QenpJXp/lqIORJg3d7wHcHpY="
   matrix:
     - VERSION=2.7.8
+    - VERSION=3.3.5
     - VERSION=3.4.1
     - VERSION=3.5.0
 
@@ -24,7 +25,8 @@ install:
       cd .. ;
     fi
   - cd rawpy
-  - pip install scipy
+  # scikit-image requires mpl, however mpl dropped python 3.3 support in mpl 1.5
+  - if [[ $VERSION == '3.3.5' ]]; then travis_retry pip install matplotlib<1.5 ; fi
   - travis_retry pip install -r dev-requirements.txt
   - brew rm jpeg
   - brew install --universal jpeg
