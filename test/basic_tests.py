@@ -7,10 +7,10 @@ import numpy.ma as ma
 from numpy.testing.utils import assert_array_equal, assert_equal
 
 import rawpy
-import rawpy.enhance
+#import rawpy.enhance
 import imageio
-from rawpy.enhance import _repair_bad_pixels_bayer2x2,\
-    _repair_bad_pixels_generic, find_bad_pixels
+#from rawpy.enhance import _repair_bad_pixels_bayer2x2,\
+#    _repair_bad_pixels_generic, find_bad_pixels
 
 # Nikon D3S
 rawTestPath = os.path.join(os.path.dirname(__file__), 'iss030e122639.NEF')
@@ -162,10 +162,18 @@ def print_stats(rgb):
           np.min(rgb, axis=(0,1)), np.max(rgb, axis=(0,1)), # range for each channel
           [len(np.unique(rgb[:,:,0])), len(np.unique(rgb[:,:,1])), len(np.unique(rgb[:,:,2]))], # unique values
           np.sum(rgb==np.iinfo(rgb.dtype).max, axis=(0,1))) # number of saturated pixels
+
+def testThumbnail():
+    raw = rawpy.imread(rawTestPath)
+    thumb = raw.get_thumbnail()
+    assert_equal(thumb["type"], 'jpeg')
+    with open('thumb_test.jpg', 'wb') as f:
+        f.write(thumb["data"])
         
 if __name__ == '__main__':
     testVersion()
-    #testFileOpenAndPostProcess()
+    testFileOpenAndPostProcess()
+    testThumbnail()
     #testBadPixelRepair()
-    testFindBadPixelsNikonD4()
+    #testFindBadPixelsNikonD4()
     

@@ -178,10 +178,12 @@ cdef extern from "libraw.h":
         LibRaw()
         int open_file(const char *fname)
         int unpack()
+        int unpack_thumb()
         int COLOR(int row, int col)
 #         int raw2image()
         int dcraw_process()
         libraw_processed_image_t* dcraw_make_mem_image(int *errcode)
+        libraw_processed_image_t* dcraw_make_mem_thumb(int *errcode)
         void dcraw_clear_mem(libraw_processed_image_t* img)
         void free_image()
         const char* strerror(int p)
@@ -255,6 +257,9 @@ cdef class RawPy:
         .. NOTE:: This is a low-level method, consider using :func:`rawpy.imread` instead.
         """
         self.handle_error(self.p.unpack())
+
+    def unpack_thumb(self):
+        self.handle_error(self.p.unpack_thumb())
     
     property raw_type:
         """
@@ -555,6 +560,25 @@ cdef class RawPy:
         wrapped.set_data(self, img)
         ndarr = wrapped.__array__()
         return ndarr
+
+    def dcraw_make_mem_thumb(self):
+        cdef int errcode = 0
+        cdef libraw_processed_image_t* thumb = self.p.dcraw_make_mem_thumb(&errcode)
+        self.handle_error(errcode)
+        if thumb.type == LIBRAW_IMAGE_JPEG:
+            return {"type": "jpeg", "data": thumb.data[:thumb.data_size]}
+        elif thumb.type == LIBRAW_IMAGE_BITMAP:
+            wrapped = processed_image_wrapper()
+            wrapped.set_data(self, thumb)
+            ndarr = wrapped.__array__()
+            return {"type": "ndarr", "data": ndarr}
+        else:
+            raise NotImplementedError
+
+
+    def get_thumbnail(self):
+        self.unpack_thumb()
+        return self.dcraw_make_mem_thumb()
     
     def postprocess(self, params=None, **kw):
         """
